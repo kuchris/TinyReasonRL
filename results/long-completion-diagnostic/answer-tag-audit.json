@@ -1,0 +1,18 @@
+{
+  "source": "results/long-completion-diagnostic/generations.jsonl",
+  "completions": 32,
+  "correct_tagged_expression_in_rejected_output": 2,
+  "examples": [
+    {
+      "id": "735bd9711726f1780f6a08a13e8f65be7e8ff37798c9d532e581fff938313309",
+      "sample": 1,
+      "expression": "(95 - 42 - 3)"
+    },
+    {
+      "id": "76c98c96a062b369925e4bc8b5c6461a7b4757aa898aa77cdd065ac075b73912",
+      "sample": 1,
+      "expression": "92 - 73 + 36"
+    }
+  ],
+  "limitation": "Only complete answer-tag pairs are inspected; untagged scratch work is not judged."
+}

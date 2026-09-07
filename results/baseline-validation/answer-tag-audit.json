@@ -1,0 +1,7 @@
+{
+  "source": "results/baseline-validation/generations.jsonl",
+  "completions": 400,
+  "correct_tagged_expression_in_rejected_output": 0,
+  "examples": [],
+  "limitation": "Only complete answer-tag pairs are inspected; untagged scratch work is not judged."
+}

@@ -1,0 +1,63 @@
+{
+  "problems": 8,
+  "completions": 32,
+  "sampled_pass@1": 0.0,
+  "pass@4": 0.0,
+  "average_reward": 0.0,
+  "exact_target_success_rate": 0.0,
+  "format_valid_rate": 0.375,
+  "valid_expression_rate": 0.0625,
+  "average_completion_tokens": 444.75,
+  "truncation_rate": 0.34375,
+  "mixed_reward_group_fraction": 0.0,
+  "failure_reasons": {
+    "format": 20,
+    "illegal_syntax": 6,
+    "numbers": 2,
+    "expression_size": 2,
+    "target": 2
+  },
+  "by_number_count": {
+    "3": {
+      "problems": 3,
+      "completions": 12,
+      "sampled_pass@1": 0.0,
+      "pass@4": 0.0,
+      "average_reward": 0.0,
+      "exact_target_success_rate": 0.0,
+      "format_valid_rate": 0.4166666666666667,
+      "valid_expression_rate": 0.0,
+      "average_completion_tokens": 493.5,
+      "truncation_rate": 0.25,
+      "mixed_reward_group_fraction": 0.0,
+      "failure_reasons": {
+        "format": 7,
+        "illegal_syntax": 4,
+        "numbers": 1
+      }
+    },
+    "4": {
+      "problems": 5,
+      "completions": 20,
+      "sampled_pass@1": 0.0,
+      "pass@4": 0.0,
+      "average_reward": 0.0,
+      "exact_target_success_rate": 0.0,
+      "format_valid_rate": 0.35,
+      "valid_expression_rate": 0.1,
+      "average_completion_tokens": 415.5,
+      "truncation_rate": 0.4,
+      "mixed_reward_group_fraction": 0.0,
+      "failure_reasons": {
+        "format": 13,
+        "expression_size": 2,
+        "illegal_syntax": 2,
+        "target": 2,
+        "numbers": 1
+      }
+    }
+  },
+  "elapsed_seconds": 232.93452120001893,
+  "peak_allocated_gib": 1.6905770301818848,
+  "peak_reserved_gib": 2.43359375
+}
