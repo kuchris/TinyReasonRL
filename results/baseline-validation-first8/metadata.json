@@ -1,0 +1,5 @@
+{
+  "subset_source": "results/baseline-validation/generations.jsonl",
+  "selection": "first 8 puzzles, all 4 samples per puzzle",
+  "purpose": "matched-size smoke comparison"
+}

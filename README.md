@@ -16,7 +16,8 @@ The initial host is an RTX 5070 Ti with 16 GB VRAM. No SFT data or training is u
 ```powershell
 uv venv --python 3.11 .venv
 uv pip install --python .venv\Scripts\python.exe torch --index-url https://download.pytorch.org/whl/cu128
-uv pip install --python .venv\Scripts\python.exe -e .
+uv pip install --python .venv\Scripts\python.exe -r requirements-lock.txt
+uv pip install --python .venv\Scripts\python.exe -e . --no-deps
 .venv\Scripts\python.exe -m pytest -q
 ```
 
@@ -110,6 +111,48 @@ thinking block, and ends at the chat end token. It still permits scratch work in
 the answer body, but it changes the prompting condition and cannot be treated
 as evidence for the original reasoning-emergence question. Neither condition
 provides worked solutions or modifies the base weights before RL.
+
+## Measured pilot results (2026-09-07)
+
+| Condition | Puzzles | Answers | Sampled pass@1 | pass@4 | Valid expression | Truncated |
+|---|---:|---:|---:|---:|---:|---:|
+| Base, plain prompt | 100 | 400 | 0% | 0% | 2.75% | 50.5% |
+| Base, matched smoke subset | 8 | 32 | 0% | 0% | 0% | 50.0% |
+| After 5 GRPO steps, same subset | 8 | 32 | 0% | 0% | 0% | 50.0% |
+| Base, separate chat diagnostic | 8 | 32 | 0% | 0% | 0% | 90.625% |
+
+The 100-puzzle validation probe contains 47 three-number and 53 four-number
+puzzles; neither group produced a correct answer. The eleven valid expressions
+all missed their targets. Average completion length was 142.57 tokens. Binary
+average reward and exact-target success rate are also zero; they are redundant
+with sampled correctness under this reward contract.
+
+The before/after smoke subset uses the same first eight validation puzzle IDs,
+sampling temperature, top-p, seed, and token cap. All 32 generated completions
+were identical before and after the adapter. The chat diagnostic increased
+verbosity and truncation, not correctness. Longer text is not evidence of
+improved reasoning.
+
+These are development probes using fixed prefixes of the validation split, one
+seed, and a short token budget. They are not representative benchmark estimates,
+and no statistical claim about general reasoning follows from them. No final
+test generations have been sampled. The full 200-step run and final test
+comparison **have not been run**: the pilot exposed zero correctness signal,
+which should be addressed before a longer experiment. A useful next controlled
+test is increasing the completion budget on a fixed development set while
+keeping the base model, no-SFT constraint, and correctness-only reward unchanged.
+
+See [the pilot report](results/PILOT.md) for evidence paths and limitations.
+
+```powershell
+.venv\Scripts\python.exe -m tinyreasonrl.evaluate --limit 100 --samples 4 --output results/baseline-validation
+.venv\Scripts\python.exe -m tinyreasonrl.plot --training results/smoke-training/training.jsonl --before results/baseline-validation-first8 --after results/after-smoke-validation --output results/smoke-plots
+```
+
+![Training reward](results/smoke-plots/reward.png)
+![Completion length](results/smoke-plots/completion-length.png)
+![Measured validation endpoints](results/smoke-plots/validation-accuracy.png)
+![Before and after smoke training](results/smoke-plots/before-after.png)
 
 ## Reward contract
 

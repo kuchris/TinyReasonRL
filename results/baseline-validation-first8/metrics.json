@@ -1,0 +1,19 @@
+{
+  "problems": 8,
+  "completions": 32,
+  "sampled_pass@1": 0.0,
+  "pass@4": 0.0,
+  "average_reward": 0.0,
+  "exact_target_success_rate": 0.0,
+  "format_valid_rate": 0.40625,
+  "valid_expression_rate": 0.0,
+  "average_completion_tokens": 146.96875,
+  "truncation_rate": 0.5,
+  "mixed_reward_group_fraction": 0.0,
+  "failure_reasons": {
+    "format": 19,
+    "illegal_syntax": 8,
+    "numbers": 1,
+    "expression_size": 4
+  }
+}
