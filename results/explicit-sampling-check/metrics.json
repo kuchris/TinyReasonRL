@@ -1,0 +1,41 @@
+{
+  "problems": 1,
+  "completions": 4,
+  "sampled_pass@1": 0.0,
+  "pass@4": 0.0,
+  "average_reward": 0.0,
+  "exact_target_success_rate": 0.0,
+  "format_valid_rate": 0.75,
+  "valid_expression_rate": 0.0,
+  "average_completion_tokens": 146.5,
+  "truncation_rate": 0.5,
+  "mixed_reward_group_fraction": 0.0,
+  "failure_reasons": {
+    "format": 1,
+    "illegal_syntax": 2,
+    "numbers": 1
+  },
+  "by_number_count": {
+    "3": {
+      "problems": 1,
+      "completions": 4,
+      "sampled_pass@1": 0.0,
+      "pass@4": 0.0,
+      "average_reward": 0.0,
+      "exact_target_success_rate": 0.0,
+      "format_valid_rate": 0.75,
+      "valid_expression_rate": 0.0,
+      "average_completion_tokens": 146.5,
+      "truncation_rate": 0.5,
+      "mixed_reward_group_fraction": 0.0,
+      "failure_reasons": {
+        "format": 1,
+        "illegal_syntax": 2,
+        "numbers": 1
+      }
+    }
+  },
+  "elapsed_seconds": 11.389820900047198,
+  "peak_allocated_gib": 1.5913348197937012,
+  "peak_reserved_gib": 1.6484375
+}

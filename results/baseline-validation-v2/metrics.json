@@ -1,0 +1,66 @@
+{
+  "problems": 100,
+  "completions": 400,
+  "sampled_pass@1": 0.0,
+  "pass@4": 0.0,
+  "average_reward": 0.0,
+  "exact_target_success_rate": 0.0,
+  "format_valid_rate": 0.645,
+  "valid_expression_rate": 0.0325,
+  "average_completion_tokens": 142.5675,
+  "truncation_rate": 0.505,
+  "mixed_reward_group_fraction": 0.0,
+  "failure_reasons": {
+    "illegal_syntax": 146,
+    "numbers": 38,
+    "format": 142,
+    "target": 13,
+    "expression_size": 58,
+    "parse": 2,
+    "arithmetic": 1
+  },
+  "by_number_count": {
+    "3": {
+      "problems": 47,
+      "completions": 188,
+      "sampled_pass@1": 0.0,
+      "pass@4": 0.0,
+      "average_reward": 0.0,
+      "exact_target_success_rate": 0.0,
+      "format_valid_rate": 0.648936170212766,
+      "valid_expression_rate": 0.03723404255319149,
+      "average_completion_tokens": 134.04255319148936,
+      "truncation_rate": 0.46808510638297873,
+      "mixed_reward_group_fraction": 0.0,
+      "failure_reasons": {
+        "illegal_syntax": 64,
+        "numbers": 23,
+        "format": 66,
+        "expression_size": 28,
+        "target": 7
+      }
+    },
+    "4": {
+      "problems": 53,
+      "completions": 212,
+      "sampled_pass@1": 0.0,
+      "pass@4": 0.0,
+      "average_reward": 0.0,
+      "exact_target_success_rate": 0.0,
+      "format_valid_rate": 0.6415094339622641,
+      "valid_expression_rate": 0.02830188679245283,
+      "average_completion_tokens": 150.12735849056602,
+      "truncation_rate": 0.5377358490566038,
+      "mixed_reward_group_fraction": 0.0,
+      "failure_reasons": {
+        "format": 76,
+        "illegal_syntax": 82,
+        "target": 6,
+        "expression_size": 30,
+        "numbers": 15,
+        "parse": 2,
+        "arithmetic": 1
+      }
+    }
+  }
+}

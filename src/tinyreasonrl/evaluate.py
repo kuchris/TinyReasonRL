@@ -12,7 +12,7 @@ import torch
 from .data import load_problems
 from .model import load_policy
 from .prompts import render_prompt
-from .rewards import score_answer
+from .rewards import REWARD_PROTOCOL, score_answer
 
 
 def summarize(records):
@@ -54,6 +54,7 @@ def evaluate(config, split, limit, samples, output, adapter=None):
                 generated = model.generate(
                     **inputs, max_new_tokens=config["max_completion_length"],
                     do_sample=True, temperature=config["temperature"], top_p=config["top_p"],
+                    top_k=50, repetition_penalty=1.0,
                     num_return_sequences=samples,
                     pad_token_id=tokenizer.pad_token_id, use_cache=True,
                 )[:, inputs["input_ids"].shape[1]:]
@@ -82,7 +83,11 @@ def evaluate(config, split, limit, samples, output, adapter=None):
     metrics["peak_allocated_gib"] = torch.cuda.max_memory_allocated() / 2**30
     metrics["peak_reserved_gib"] = torch.cuda.max_memory_reserved() / 2**30
     metadata = {"config": config, "split": split, "limit": limit, "samples": samples,
+                "reward_protocol": REWARD_PROTOCOL,
                 "adapter": adapter, "gpu": torch.cuda.get_device_name(),
+                "generation": {"do_sample": True, "top_k": 50, "repetition_penalty": 1.0,
+                               "eos_token_id": model.generation_config.eos_token_id,
+                               "pad_token_id": tokenizer.pad_token_id},
                 "versions": {p: importlib.metadata.version(p) for p in (
                     "torch", "transformers", "trl", "peft", "datasets", "accelerate")}}
     (output / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")

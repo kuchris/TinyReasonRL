@@ -14,7 +14,7 @@ from trl import GRPOConfig, GRPOTrainer
 from .data import load_problems
 from .model import load_policy
 from .prompts import render_prompt
-from .rewards import correctness_reward, score_answer
+from .rewards import REWARD_PROTOCOL, correctness_reward, score_answer
 
 
 class JsonLoggingCallback(TrainerCallback):
@@ -31,6 +31,10 @@ class JsonLoggingCallback(TrainerCallback):
 def train(config, training, output, results, resume=None):
     results = Path(results)
     results.mkdir(parents=True, exist_ok=True)
+    if resume:
+        previous = json.loads((results / "metadata.json").read_text(encoding="utf-8"))
+        if previous.get("reward_protocol", "strict-single-answer-v1") != REWARD_PROTOCOL:
+            raise ValueError("Reward protocol changed; start a fresh run instead of resuming.")
     os.environ["TENSORBOARD_LOGGING_DIR"] = str(results / "tensorboard")
     model, tokenizer = load_policy(config)
     model.config.use_cache = False
@@ -42,7 +46,7 @@ def train(config, training, output, results, resume=None):
         gradient_accumulation_steps=training["gradient_accumulation_steps"],
         num_generations=training["num_generations"],
         max_completion_length=config["max_completion_length"],
-        temperature=config["temperature"], top_p=config["top_p"],
+        temperature=config["temperature"], top_p=config["top_p"], top_k=0,
         bf16=True, gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
         beta=training["beta"], loss_type=training["loss_type"],
@@ -53,6 +57,7 @@ def train(config, training, output, results, resume=None):
         dataloader_num_workers=0, optim="adamw_torch", max_grad_norm=1.0,
     )
     metadata = {"experiment": config, "training": training,
+                "reward_protocol": REWARD_PROTOCOL,
                 "resolved_grpo": args.to_dict(), "resume": resume,
                 "versions": {p: importlib.metadata.version(p) for p in (
                     "torch", "transformers", "trl", "peft", "datasets", "accelerate")}}

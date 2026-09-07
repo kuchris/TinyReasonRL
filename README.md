@@ -8,6 +8,13 @@ verifiable arithmetic rewards. Increased reward is evidence of improved task
 performance; it does not establish that genuine reasoning emerged. Pretraining
 already supplies capabilities, and this experiment does not start from random weights.
 
+**Latest finding:** the initial 256-token pilot had no correctness signal. A
+1,024-token probe exposed two correct final answers that the original tag-count
+rule rejected. The verifier now judges the last answer block (`final-answer-v2`),
+and the same saved long outputs score 2/32 correct (2/8 puzzles solved). These
+are base-model capabilities before RL, not an RL improvement. Original results
+are preserved alongside separately rescored artifacts.
+
 ## Setup (Windows PowerShell)
 
 Python 3.11 and an NVIDIA GPU supporting BF16 are required for the experiment.
@@ -87,6 +94,12 @@ There is no formatting bonus, reward model, SFT, quantization, or vLLM server.
 The initial training subset is the first 4,096 unique training puzzles, sampled
 in a seeded shuffled order by TRL.
 
+Evaluation uses top-k 50 (the installed Transformers generation fallback), while
+training uses top-k 0 (TRL's unrestricted top-k sampling). Both use temperature
+0.8 and top-p 0.95. These existing sampling choices are now explicit in code;
+before/after evaluation uses the same settings. Training reward should not be
+interpreted as an estimate of evaluation accuracy under a different sampler.
+
 Each optimizer step logs reward, fraction of zero-variance groups, completion
 length, gradient norm, and peak allocated GPU memory to JSON. TRL metrics also
 go to TensorBoard. Every sampled training completion is saved with its step and
@@ -112,7 +125,10 @@ the answer body, but it changes the prompting condition and cannot be treated
 as evidence for the original reasoning-emergence question. Neither condition
 provides worked solutions or modifies the base weights before RL.
 
-## Measured pilot results (2026-09-07)
+## Original strict-format pilot results (2026-09-07)
+
+This table preserves the initial `strict-single-answer-v1` scoring and training
+history. The current verifier differs; see the correction below.
 
 | Condition | Puzzles | Answers | Sampled pass@1 | pass@4 | Valid expression | Truncated |
 |---|---:|---:|---:|---:|---:|---:|
@@ -142,6 +158,41 @@ which should be addressed before a longer experiment. A useful next controlled
 test is increasing the completion budget on a fixed development set while
 keeping the base model, no-SFT constraint, and correctness-only reward unchanged.
 
+## Corrected final-answer scoring and longer budget
+
+The original verifier required exactly one occurrence of each answer tag in the
+entire completion. That inadvertently penalized scratch work which quoted the
+format instruction. Two long base-model outputs ended with correct expressions:
+`95 - 42 - 3 = 50` and `92 - 73 + 36 = 55`, but both were rejected for earlier tags.
+The correction judges the final answer block and retains the same strict arithmetic
+checks and binary reward. Tests cover these regressions, earlier correct answers
+followed by a wrong final answer, and truncated final blocks.
+
+Saved generations were rescored without resampling or changing historical files:
+
+| Probe under final-answer-v2 | Puzzles | Answers | Correct | pass@4 | Valid expression | Mixed-reward groups |
+|---|---:|---:|---:|---:|---:|---:|
+| Plain, 256-token baseline | 100 | 400 | 0/400 | 0% | 3.25% | 0% |
+| Plain, 1,024-token diagnostic | 8 | 32 | 2/32 | 25% | 12.5% | 25% |
+
+The longer-budget probe uses the first eight puzzles from the original baseline;
+it is a small development diagnostic, not a broad performance estimate. Both
+successes are three-number puzzles. The successful scratch work includes checking
+arithmetic **before RL**, so those behaviors cannot later be claimed to have first
+emerged during this project's training.
+
+```powershell
+.venv\Scripts\python.exe -m tinyreasonrl.evaluate --config configs/long-completion.json --limit 8 --samples 4 --output results/my-long-baseline
+.venv\Scripts\python.exe -m tinyreasonrl.train --config configs/long-completion.json --max-steps 5 --output checkpoints/my-long-smoke --results results/my-long-smoke
+```
+
+`scripts/rescore.py` creates a new results directory with the current reward
+protocol. `scripts/audit_answer_tags.py` diagnoses correct tagged candidates hidden
+in rejected output; it never changes training rewards. The long-budget originals
+are in `results/long-completion-diagnostic/`; their corrected scores are in
+`results/long-completion-v2/`. The 100-puzzle rescoring is in
+`results/baseline-validation-v2/`.
+
 See [the pilot report](results/PILOT.md) for evidence paths and limitations.
 
 ```powershell
@@ -157,8 +208,12 @@ See [the pilot report](results/PILOT.md) for evidence paths and limitations.
 ## Reward contract
 
 Each problem supplies three or four positive integers and a target. The model
-may write scratch work, then must produce exactly one `<answer>expression</answer>`.
+may write scratch work, then must finish with `<answer>expression</answer>`.
 The prompt contains no worked answers or reasoning demonstrations.
+
+The last answer block is authoritative. Earlier tags or attempted answers in
+scratch work are ignored, rather than selecting whichever candidate happens to
+be correct. An unfinished final block or extra trailing closing tag is invalid.
 
 The evaluator accepts only integer leaves and binary `+`, `-`, `*`, `/` operations
 with parentheses. Every input must appear exactly once, including repeated inputs.

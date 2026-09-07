@@ -6,6 +6,8 @@ from dataclasses import asdict, dataclass
 from fractions import Fraction
 import re
 
+REWARD_PROTOCOL = "final-answer-v2"
+
 
 @dataclass(frozen=True)
 class Score:
@@ -20,16 +22,17 @@ class Score:
 
 
 def score_answer(completion: str, numbers: list[int], target: int) -> Score:
-    """Require one answer tag pair, positive integer leaves, and every input.
+    """Judge the last answer block, positive integer leaves, and every input.
 
     Negative and fractional intermediate values are allowed. Unary signs,
-    decimal literals, concatenation, powers, and extra answer tags are not.
+    decimal literals, concatenation, and powers are not. Earlier answer tags
+    are scratch work; an unfinished final answer never falls back to an earlier one.
     """
-    answers = re.findall(r"<answer>(.*?)</answer>", completion, re.DOTALL)
-    if (len(answers) != 1 or completion.count("<answer>") != 1
-            or completion.count("</answer>") != 1):
+    start = completion.rfind("<answer>")
+    end = completion.find("</answer>", start + len("<answer>"))
+    if start < 0 or end < 0 or "</answer>" in completion[end + len("</answer>"):]:
         return Score(0.0, "format")
-    expression = answers[0].strip()
+    expression = completion[start + len("<answer>"):end].strip()
 
     def invalid(reason):
         return Score(0.0, reason, True, False, expression)

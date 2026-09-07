@@ -1,5 +1,10 @@
 # Pilot evidence: direct RL has no correctness signal yet
 
+> Historical report for the initial strict-format, 256-token pilot. The later
+> `final-answer-v2` correction and 1,024-token diagnostic found 2/32 correct base
+> answers; see the current README and `long-completion-v2/`. Original measurements
+> below remain unchanged to preserve the experimental history.
+
 Date: 2026-09-07. Hardware: NVIDIA RTX 5070 Ti, 16 GB, native Windows.
 
 ## What actually ran

@@ -1,0 +1,28 @@
+{
+  "config": {
+    "model_id": "Qwen/Qwen3.5-0.8B-Base",
+    "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "dataset_id": "Jiayi-Pan/Countdown-Tasks-3to4",
+    "dataset_revision": "408f70d177020686d34a56bba5952feb45aaaee4",
+    "seed": 42,
+    "max_completion_length": 1024,
+    "temperature": 0.8,
+    "top_p": 0.95
+  },
+  "split": "validation",
+  "limit": 8,
+  "samples": 4,
+  "adapter": null,
+  "gpu": "NVIDIA GeForce RTX 5070 Ti",
+  "versions": {
+    "torch": "2.11.0+cu128",
+    "transformers": "5.16.1",
+    "trl": "1.12.0",
+    "peft": "0.20.0",
+    "datasets": "5.0.1",
+    "accelerate": "1.14.0"
+  },
+  "source": "results\\long-completion-diagnostic",
+  "reward_protocol": "final-answer-v2",
+  "resampled": false
+}

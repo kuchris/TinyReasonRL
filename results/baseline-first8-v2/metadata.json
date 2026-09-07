@@ -1,0 +1,8 @@
+{
+  "subset_source": "results/baseline-validation/generations.jsonl",
+  "selection": "first 8 puzzles, all 4 samples per puzzle",
+  "purpose": "matched-size smoke comparison",
+  "source": "results\\baseline-validation-first8",
+  "reward_protocol": "final-answer-v2",
+  "resampled": false
+}
