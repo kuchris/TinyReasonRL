@@ -85,3 +85,29 @@ def correctness_reward(completions, numbers, target, **kwargs):
     """TRL passes dataset columns alongside plain-text completions."""
     return [score_answer(c, n, t).reward
             for c, n, t in zip(completions, numbers, target, strict=True)]
+
+
+def shaped_reward(completions, numbers, target, *, format_bonus=0.1,
+                  expression_bonus=0.3, **kwargs):
+    """Correctness reward plus intermediate shaping for partial progress.
+
+    This is an opt-in contrast to the correctness-only reward: it gives a
+    nonzero reward for a well-formed answer block, and a larger reward for a
+    valid (arithmetically evaluable) expression that merely misses the target.
+    Shaping narrows the sparse-reward problem (most GRPO groups are otherwise
+    all-zero and produce no advantage signal), but it no longer isolates
+    correctness: it must be reported as a separate reward protocol, and its
+    results are not comparable to the correctness-only baseline.
+    """
+    shaped = []
+    for completion, nums, goal in zip(completions, numbers, target, strict=True):
+        score = score_answer(completion, nums, goal)
+        if score.reward == 1.0:
+            shaped.append(1.0)
+        elif score.expression_valid:
+            shaped.append(expression_bonus)
+        elif score.format_valid:
+            shaped.append(format_bonus)
+        else:
+            shaped.append(0.0)
+    return shaped

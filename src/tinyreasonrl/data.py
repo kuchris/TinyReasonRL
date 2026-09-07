@@ -56,7 +56,17 @@ def prepare_data(config, directory="data"):
     return manifest
 
 
-def load_problems(split, limit=None, directory="data", config=None):
+def load_problems(split, limit=None, directory="data", config=None,
+                  min_numbers=None, max_numbers=None):
+    """Load a split, optionally restricting to a range of input number counts.
+
+    ``min_numbers``/``max_numbers`` implement a curriculum: e.g. ``min_numbers=3,
+    max_numbers=3`` trains only three-number puzzles, which the base model solves
+    far more reliably than four-number puzzles (see the pilot metrics). Filtering
+    happens before ``limit`` is applied so a fixed-size subset stays within the
+    requested difficulty band. When a curated band is requested it is recorded in
+    the caller's metadata, not silently folded into ordinary loading.
+    """
     if config is not None:
         manifest = json.loads((Path(directory) / "manifest.json").read_text())
         expected = (config["dataset_id"], config["dataset_revision"], config["seed"])
@@ -66,7 +76,13 @@ def load_problems(split, limit=None, directory="data", config=None):
     rows = []
     with (Path(directory) / f"{split}.jsonl").open(encoding="utf-8") as handle:
         for line in handle:
-            rows.append(json.loads(line))
+            record = json.loads(line)
+            n = len(record["numbers"])
+            if min_numbers is not None and n < min_numbers:
+                continue
+            if max_numbers is not None and n > max_numbers:
+                continue
+            rows.append(record)
             if limit is not None and len(rows) >= limit:
                 break
     return Dataset.from_list(rows)

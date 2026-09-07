@@ -2,7 +2,7 @@ import pytest
 import json
 from pathlib import Path
 
-from tinyreasonrl.rewards import correctness_reward, score_answer
+from tinyreasonrl.rewards import correctness_reward, score_answer, shaped_reward
 
 
 @pytest.mark.parametrize("expression,numbers,target", [
@@ -90,3 +90,27 @@ def test_actual_saved_false_negative_rollouts():
              if score_answer(row["completion"], row["numbers"], row["target"]).reward]
     assert len(fixed) == 2
     assert all(row["reward"] == 0 for row in fixed)
+
+
+def test_shaped_reward_correct_is_still_one():
+    assert shaped_reward(["<answer>7 * 2 + 3</answer>"], [[2, 3, 7]], [17]) == [1.0]
+
+
+def test_shaped_reward_orders_partial_progress():
+    completions = [
+        "<answer>7 * 2 + 3</answer>",        # correct -> 1.0
+        "<answer>7 + 2 + 3</answer>",        # valid, wrong target -> expression bonus
+        "no tags at all",                    # invalid -> 0.0
+        "<answer>7 * 2 + 3 = 17</answer>",   # format valid, illegal syntax -> format bonus
+    ]
+    got = shaped_reward(completions, [[2, 3, 7]] * 4, [17] * 4)
+    assert got[0] == 1.0 > got[1] > got[3] > got[2]
+    assert got[1] == 0.3
+    assert got[3] == 0.1
+    assert got[2] == 0.0
+
+
+def test_shaped_reward_honors_custom_bonuses():
+    got = shaped_reward(["<answer>7 + 2 + 3</answer>"], [[2, 3, 7]], [17],
+                        format_bonus=0.05, expression_bonus=0.5)
+    assert got == [0.5]

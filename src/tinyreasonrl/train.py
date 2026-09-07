@@ -14,7 +14,8 @@ from trl import GRPOConfig, GRPOTrainer
 from .data import load_problems
 from .model import load_policy
 from .prompts import render_prompt
-from .rewards import REWARD_PROTOCOL, correctness_reward, score_answer
+from .rewards import (REWARD_PROTOCOL, correctness_reward, score_answer,
+                      shaped_reward)
 
 
 class JsonLoggingCallback(TrainerCallback):
@@ -28,7 +29,8 @@ class JsonLoggingCallback(TrainerCallback):
             handle.write(json.dumps(row) + "\n")
 
 
-def train(config, training, output, results, resume=None):
+def train(config, training, output, results, resume=None, reward="correctness",
+          min_numbers=None, max_numbers=None):
     results = Path(results)
     results.mkdir(parents=True, exist_ok=True)
     if resume:
@@ -58,14 +60,18 @@ def train(config, training, output, results, resume=None):
     )
     metadata = {"experiment": config, "training": training,
                 "reward_protocol": REWARD_PROTOCOL,
+                "reward": reward, "min_numbers": min_numbers,
+                "max_numbers": max_numbers,
                 "resolved_grpo": args.to_dict(), "resume": resume,
                 "versions": {p: importlib.metadata.version(p) for p in (
                     "torch", "transformers", "trl", "peft", "datasets", "accelerate")}}
     metadata_path = results / ("resume-metadata.json" if resume else "metadata.json")
     metadata_path.write_text(json.dumps(metadata, indent=2, default=str), encoding="utf-8")
 
+    reward_func = correctness_reward if reward == "correctness" else shaped_reward
+
     def logged_correctness(completions, numbers, target, trainer_state=None, **kwargs):
-        rewards = correctness_reward(completions, numbers, target)
+        rewards = reward_func(completions, numbers, target)
         step = trainer_state.global_step if trainer_state else 0
         with (results / "rollouts.jsonl").open("a", encoding="utf-8") as handle:
             for completion, nums, goal in zip(completions, numbers, target, strict=True):
@@ -74,7 +80,8 @@ def train(config, training, output, results, resume=None):
                                          **score_answer(completion, nums, goal).to_dict()}) + "\n")
         return rewards
 
-    dataset = load_problems("train", training["train_limit"], config=config)
+    dataset = load_problems("train", training["train_limit"], config=config,
+                            min_numbers=min_numbers, max_numbers=max_numbers)
     dataset = dataset.map(lambda row: {"prompt": render_prompt(row["prompt"], tokenizer, config)})
     trainer = GRPOTrainer(
         model=model, processing_class=tokenizer, args=args,
@@ -104,6 +111,13 @@ if __name__ == "__main__":
     parser.add_argument("--output", default="checkpoints/main")
     parser.add_argument("--results", default="results/main-training")
     parser.add_argument("--resume")
+    parser.add_argument("--reward", choices=["correctness", "shaped"],
+                        default="correctness",
+                        help="correctness-only (baseline) or shaped partial-progress reward")
+    parser.add_argument("--min-numbers", type=int,
+                        help="train only puzzles with at least this many inputs (curriculum)")
+    parser.add_argument("--max-numbers", type=int,
+                        help="train only puzzles with at most this many inputs (curriculum)")
     args = parser.parse_args()
     config = json.loads(Path(args.config).read_text())
     training = json.loads(Path(args.training_config).read_text())
@@ -114,4 +128,6 @@ if __name__ == "__main__":
         parser.error("max-steps must be positive")
     if not args.resume and (Path(args.results) / "training.jsonl").exists():
         parser.error("Results already exist; use a new directory or --resume a checkpoint")
-    train(config, training, args.output, args.results, args.resume)
+    train(config, training, args.output, args.results, args.resume,
+          reward=args.reward, min_numbers=args.min_numbers,
+          max_numbers=args.max_numbers)
