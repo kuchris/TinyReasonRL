@@ -49,6 +49,68 @@ Current tested versions: Python 3.11, PyTorch 2.11.0+cu128, Transformers 5.16.1,
 TRL 1.12.0, PEFT 0.20.0, Datasets 5.0.1, Accelerate 1.14.0. The text-only
 `Qwen3_5ForCausalLM` loader reports no missing or mismatched weights.
 
+## Direct GRPO training
+
+```powershell
+# Small run, then prove optimizer/RNG/checkpoint restart works.
+.venv\Scripts\python.exe -m tinyreasonrl.train --max-steps 1 --output checkpoints/my-smoke --results results/my-smoke
+.venv\Scripts\python.exe -m tinyreasonrl.train --max-steps 5 --output checkpoints/my-smoke --results results/my-smoke --resume checkpoints/my-smoke/checkpoint-1
+
+# The configured 200-step experiment (not yet validated as useful learning).
+.venv\Scripts\python.exe -m tinyreasonrl.train
+
+# Evaluate an adapter with the same plain prompt and sampling settings.
+.venv\Scripts\python.exe -m tinyreasonrl.evaluate --limit 8 --samples 4 --adapter checkpoints/smoke/final --output results/after-smoke-validation
+
+# Optional separate prompt-format diagnostic; it is not the main experiment.
+.venv\Scripts\python.exe -m tinyreasonrl.evaluate --config configs/chat-diagnostic.json --limit 8 --samples 4 --output results/chat-diagnostic
+
+.venv\Scripts\tensorboard.exe --logdir results/smoke-training/tensorboard
+```
+
+Training uses BF16, rank-8 LoRA on all text-model linear layers except the output
+head, alpha 16, no adapter dropout, gradient checkpointing, and a constant 1e-5
+learning rate. There are 5,411,328 trainable parameters (0.7141% of the adapted
+model). AdamW updates these adapters; pretrained model weights remain frozen.
+
+The microbatch is one completion, with eight gradient-accumulation steps and
+four generations per prompt. In the installed TRL version this resolves to
+eight generated completions (two unique prompts) per optimizer update. A group
+of four is not four independent optimization steps.
+
+The loss is explicitly `dapo`, TRL's default token normalization, using
+group-standardized rewards. This is GRPO-style optimization with DAPO loss
+normalization, not an exact reproduction of the original paper's loss.
+`beta=0.0` disables the reference-policy KL penalty, so there is no KL curve.
+There is no formatting bonus, reward model, SFT, quantization, or vLLM server.
+The initial training subset is the first 4,096 unique training puzzles, sampled
+in a seeded shuffled order by TRL.
+
+Each optimizer step logs reward, fraction of zero-variance groups, completion
+length, gradient norm, and peak allocated GPU memory to JSON. TRL metrics also
+go to TensorBoard. Every sampled training completion is saved with its step and
+verifier result. Checkpoints include adapters, optimizer, scheduler, RNG, and
+trainer state; final adapters are separate. Retention keeps the four latest
+checkpoints, so older checkpoint paths may disappear during resumed training.
+The seed improves reproducibility but does not guarantee bitwise-identical GPU
+runs across software/hardware changes.
+
+The actual smoke run reached step one, then resumed to step five. All 40
+training completions earned zero reward; every logged gradient norm was zero.
+Checkpoint inspection confirmed that LoRA B matrices stayed zero and adapters
+at steps two and five were identical. Peak allocated memory was 2.49 GiB, with
+3.05 GiB reserved. **This validates execution and restart, not successful RL
+learning.** Some local checks ran concurrently, so timings are not throughput
+benchmarks. Evidence is in `results/smoke-training/`; local checkpoints are in
+`checkpoints/smoke/` and deliberately excluded from Git.
+
+The original plain prompt and a separate official-chat-template diagnostic are
+both available. The latter sets `enable_thinking=false`, which inserts an empty
+thinking block, and ends at the chat end token. It still permits scratch work in
+the answer body, but it changes the prompting condition and cannot be treated
+as evidence for the original reasoning-emergence question. Neither condition
+provides worked solutions or modifies the base weights before RL.
+
 ## Reward contract
 
 Each problem supplies three or four positive integers and a target. The model

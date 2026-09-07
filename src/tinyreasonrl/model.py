@@ -8,6 +8,8 @@ def load_policy(config, adapter=None):
     set_seed(config["seed"])
     tokenizer = AutoTokenizer.from_pretrained(
         config["model_id"], revision=config["model_revision"], padding_side="left")
+    if config.get("prompt_format", "plain") == "chat":
+        tokenizer.eos_token = "<|im_end|>"
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
     model, info = Qwen3_5ForCausalLM.from_pretrained(
@@ -16,6 +18,7 @@ def load_policy(config, adapter=None):
     if info.get("missing_keys") or info.get("mismatched_keys"):
         raise RuntimeError(f"Incomplete text model weights: {info}")
     model.to("cuda")
+    model.generation_config.eos_token_id = tokenizer.eos_token_id
     if adapter:
         from peft import PeftModel
         model = PeftModel.from_pretrained(model, adapter)

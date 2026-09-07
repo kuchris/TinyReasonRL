@@ -1,0 +1,19 @@
+{
+  "checkpoint_2_to_5_identical": true,
+  "lora_B_all_zero": true,
+  "adapter_tensors": 372,
+  "lora_B_tensors": 186,
+  "checkpoint_files": [
+    "adapter_config.json",
+    "adapter_model.safetensors",
+    "chat_template.jinja",
+    "optimizer.pt",
+    "README.md",
+    "rng_state.pth",
+    "scheduler.pt",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "trainer_state.json",
+    "training_args.bin"
+  ]
+}

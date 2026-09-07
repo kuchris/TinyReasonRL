@@ -11,6 +11,7 @@ import torch
 
 from .data import load_problems
 from .model import load_policy
+from .prompts import render_prompt
 from .rewards import score_answer
 
 
@@ -40,26 +41,35 @@ def summarize(records):
 def evaluate(config, split, limit, samples, output, adapter=None):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
-    problems = load_problems(split, limit)
+    problems = load_problems(split, limit, config=config)
     model, tokenizer = load_policy(config, adapter)
     torch.cuda.reset_peak_memory_stats()
     records = []
     started = time.perf_counter()
     with (output / "generations.jsonl").open("w", encoding="utf-8") as handle:
         for index, problem in enumerate(problems):
-            inputs = tokenizer(problem["prompt"], return_tensors="pt").to("cuda")
-            for sample in range(samples):
-                with torch.inference_mode():
-                    ids = model.generate(
-                        **inputs, max_new_tokens=config["max_completion_length"],
-                        do_sample=True, temperature=config["temperature"], top_p=config["top_p"],
-                        pad_token_id=tokenizer.pad_token_id, use_cache=True,
-                    )[0, inputs["input_ids"].shape[1]:]
+            prompt = render_prompt(problem["prompt"], tokenizer, config)
+            inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
+            with torch.inference_mode():
+                generated = model.generate(
+                    **inputs, max_new_tokens=config["max_completion_length"],
+                    do_sample=True, temperature=config["temperature"], top_p=config["top_p"],
+                    num_return_sequences=samples,
+                    pad_token_id=tokenizer.pad_token_id, use_cache=True,
+                )[:, inputs["input_ids"].shape[1]:]
+            eos_ids = model.generation_config.eos_token_id
+            eos_ids = [eos_ids] if isinstance(eos_ids, int) else (eos_ids or [])
+            for sample, ids in enumerate(generated):
+                stops = [i for i, token in enumerate(ids.tolist()) if token in eos_ids]
+                ended = bool(stops)
+                if ended:
+                    ids = ids[:stops[0] + 1]
                 completion = tokenizer.decode(ids, skip_special_tokens=True)
                 score = score_answer(completion, problem["numbers"], problem["target"])
                 row = {"id": problem["id"], "numbers": problem["numbers"],
-                       "target": problem["target"], "sample": sample, "completion": completion,
-                       "tokens": len(ids), "truncated": len(ids) == config["max_completion_length"],
+                       "target": problem["target"], "prompt": prompt,
+                       "sample": sample, "completion": completion,
+                       "tokens": len(ids), "truncated": not ended,
                        **score.to_dict()}
                 records.append(row)
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")

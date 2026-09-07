@@ -56,7 +56,13 @@ def prepare_data(config, directory="data"):
     return manifest
 
 
-def load_problems(split, limit=None, directory="data"):
+def load_problems(split, limit=None, directory="data", config=None):
+    if config is not None:
+        manifest = json.loads((Path(directory) / "manifest.json").read_text())
+        expected = (config["dataset_id"], config["dataset_revision"], config["seed"])
+        actual = (manifest["dataset_id"], manifest["revision"], manifest["seed"])
+        if actual != expected:
+            raise ValueError("Prepared data does not match configuration; rerun data preparation.")
     rows = []
     with (Path(directory) / f"{split}.jsonl").open(encoding="utf-8") as handle:
         for line in handle:
