@@ -1,0 +1,63 @@
+{
+  "dataset_id": "Jiayi-Pan/Countdown-Tasks-3to4",
+  "revision": "408f70d177020686d34a56bba5952feb45aaaee4",
+  "seed": 42,
+  "raw_rows": 490364,
+  "unique_puzzles": 449570,
+  "duplicates_removed": 40794,
+  "counts": {
+    "train_3_numbers": 180327,
+    "train_4_numbers": 224509,
+    "test_4_numbers": 12287,
+    "validation_3_numbers": 10017,
+    "validation_4_numbers": 12372,
+    "test_3_numbers": 10058
+  },
+  "examples": [
+    {
+      "numbers": [
+        44,
+        19,
+        35
+      ],
+      "target": 98,
+      "split": "train"
+    },
+    {
+      "numbers": [
+        63,
+        95,
+        96
+      ],
+      "target": 64,
+      "split": "train"
+    },
+    {
+      "numbers": [
+        95,
+        11,
+        56
+      ],
+      "target": 28,
+      "split": "train"
+    },
+    {
+      "numbers": [
+        19,
+        74,
+        45
+      ],
+      "target": 48,
+      "split": "train"
+    },
+    {
+      "numbers": [
+        49,
+        41,
+        73
+      ],
+      "target": 17,
+      "split": "train"
+    }
+  ]
+}

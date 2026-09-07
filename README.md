@@ -23,6 +23,32 @@ uv pip install --python .venv\Scripts\python.exe -e .
 The CUDA wheel is important for this GPU. System Python is not modified.
 Resolved package versions will be recorded with experiment results.
 
+To reproduce the installed environment, use `requirements-lock.txt` after
+installing the CUDA torch wheel, then install this project with `-e . --no-deps`.
+
+## Run the first milestone
+
+```powershell
+.venv\Scripts\python.exe -m tinyreasonrl.data
+.venv\Scripts\python.exe -m tinyreasonrl.evaluate --limit 1 --samples 4 --output results/milestone1
+```
+
+Data preparation found 490,364 source rows, 449,570 unique puzzles, and 40,794
+duplicates. Splits contain 404,836 training, 22,389 validation, and 22,345 test
+puzzles. `results/dataset-manifest.json` records counts and example rows.
+
+The first actual run completed on the RTX 5070 Ti in 20.6 seconds of generation
+and scoring, excluding loading. Peak PyTorch allocated memory was 1.47 GiB
+(reserved: 1.53 GiB; these exclude other desktop applications).
+Four samples on one validation puzzle produced zero correct answers: one
+returned only the target and three were truncated at 256 tokens. These are
+pipeline smoke results, **not a meaningful accuracy estimate**. Full generations,
+metrics, and runtime metadata are in `results/milestone1/`.
+
+Current tested versions: Python 3.11, PyTorch 2.11.0+cu128, Transformers 5.16.1,
+TRL 1.12.0, PEFT 0.20.0, Datasets 5.0.1, Accelerate 1.14.0. The text-only
+`Qwen3_5ForCausalLM` loader reports no missing or mismatched weights.
+
 ## Reward contract
 
 Each problem supplies three or four positive integers and a target. The model

@@ -1,0 +1,10 @@
+{
+  "model_id": "Qwen/Qwen3.5-0.8B-Base",
+  "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "dataset_id": "Jiayi-Pan/Countdown-Tasks-3to4",
+  "dataset_revision": "408f70d177020686d34a56bba5952feb45aaaee4",
+  "seed": 42,
+  "max_completion_length": 256,
+  "temperature": 0.8,
+  "top_p": 0.95
+}
