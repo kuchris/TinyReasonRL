@@ -40,6 +40,8 @@ def summarize(records):
 
 def evaluate(config, split, limit, samples, output, adapter=None):
     output = Path(output)
+    if (output / "generations.jsonl").exists():
+        raise FileExistsError(f"Saved generations already exist in {output}; choose a fresh output directory.")
     output.mkdir(parents=True, exist_ok=True)
     problems = load_problems(split, limit, config=config)
     model, tokenizer = load_policy(config, adapter)

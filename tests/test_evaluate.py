@@ -1,6 +1,6 @@
 import pytest
 
-from tinyreasonrl.evaluate import summarize
+from tinyreasonrl.evaluate import evaluate, summarize
 
 
 def test_pass_k_counts_puzzles_not_completions():
@@ -15,3 +15,11 @@ def test_pass_k_counts_puzzles_not_completions():
     assert metrics["mixed_reward_group_fraction"] == 0.5
     with pytest.raises(ValueError):
         summarize(records[:-1])
+
+
+def test_evaluation_preserves_existing_generations(tmp_path):
+    path = tmp_path / "generations.jsonl"
+    path.write_text("existing evidence")
+    with pytest.raises(FileExistsError, match="fresh output directory"):
+        evaluate({}, "validation", 1, 4, tmp_path)
+    assert path.read_text() == "existing evidence"

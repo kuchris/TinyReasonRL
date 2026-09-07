@@ -30,6 +30,8 @@ uv pip install --python .venv\Scripts\python.exe -e . --no-deps
 
 The CUDA wheel is important for this GPU. System Python is not modified.
 Resolved package versions will be recorded with experiment results.
+Use a fresh output directory for each evaluation; existing raw generations are
+protected from accidental overwrite.
 
 To reproduce the installed environment, use `requirements-lock.txt` after
 installing the CUDA torch wheel, then install this project with `-e . --no-deps`.
@@ -38,7 +40,7 @@ installing the CUDA torch wheel, then install this project with `-e . --no-deps`
 
 ```powershell
 .venv\Scripts\python.exe -m tinyreasonrl.data
-.venv\Scripts\python.exe -m tinyreasonrl.evaluate --limit 1 --samples 4 --output results/milestone1
+.venv\Scripts\python.exe -m tinyreasonrl.evaluate --limit 1 --samples 4 --output results/my-milestone1
 ```
 
 Data preparation found 490,364 source rows, 449,570 unique puzzles, and 40,794
@@ -68,10 +70,10 @@ TRL 1.12.0, PEFT 0.20.0, Datasets 5.0.1, Accelerate 1.14.0. The text-only
 .venv\Scripts\python.exe -m tinyreasonrl.train
 
 # Evaluate an adapter with the same plain prompt and sampling settings.
-.venv\Scripts\python.exe -m tinyreasonrl.evaluate --limit 8 --samples 4 --adapter checkpoints/smoke/final --output results/after-smoke-validation
+.venv\Scripts\python.exe -m tinyreasonrl.evaluate --limit 8 --samples 4 --adapter checkpoints/smoke/final --output results/my-after-smoke
 
 # Optional separate prompt-format diagnostic; it is not the main experiment.
-.venv\Scripts\python.exe -m tinyreasonrl.evaluate --config configs/chat-diagnostic.json --limit 8 --samples 4 --output results/chat-diagnostic
+.venv\Scripts\python.exe -m tinyreasonrl.evaluate --config configs/chat-diagnostic.json --limit 8 --samples 4 --output results/my-chat-diagnostic
 
 .venv\Scripts\tensorboard.exe --logdir results/smoke-training/tensorboard
 ```
@@ -196,7 +198,7 @@ are in `results/long-completion-diagnostic/`; their corrected scores are in
 See [the pilot report](results/PILOT.md) for evidence paths and limitations.
 
 ```powershell
-.venv\Scripts\python.exe -m tinyreasonrl.evaluate --limit 100 --samples 4 --output results/baseline-validation
+.venv\Scripts\python.exe -m tinyreasonrl.evaluate --limit 100 --samples 4 --output results/my-baseline-validation
 .venv\Scripts\python.exe -m tinyreasonrl.plot --training results/smoke-training/training.jsonl --before results/baseline-validation-first8 --after results/after-smoke-validation --output results/smoke-plots
 ```
 
