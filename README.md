@@ -14,6 +14,9 @@ rule rejected. The verifier now judges the last answer block (`final-answer-v2`)
 and the same saved long outputs score 2/32 correct (2/8 puzzles solved). These
 are base-model capabilities before RL, not an RL improvement. Original results
 are preserved alongside separately rescored artifacts.
+The corrected five-step GRPO smoke subsequently produced nonzero gradients at
+updates four and five and changed all 186 LoRA B matrices. Learning mechanics
+are now verified; this small pilot does not establish a reliable accuracy gain.
 
 ## Setup (Windows PowerShell)
 
@@ -194,6 +197,61 @@ in rejected output; it never changes training rewards. The long-budget originals
 are in `results/long-completion-diagnostic/`; their corrected scores are in
 `results/long-completion-v2/`. The 100-puzzle rescoring is in
 `results/baseline-validation-v2/`.
+
+## Corrected GRPO smoke: real parameter updates
+
+A fresh run with `configs/long-completion.json` and `final-answer-v2` completed
+five optimizer updates in 356.9 seconds. Two of 40 training answers were correct:
+`50 + 68 - 36` for target 82 and `99 - 22 + 5` for target 82. Updates one through
+three had zero gradients; updates four and five each had mean reward 0.125 and
+gradient norms 0.422 and 0.461. All 186 LoRA B tensors changed from their zero
+initialization, and all saved adapter tensors were finite.
+
+Peak PyTorch allocated memory was 5.37 GiB and reserved memory was 6.66 GiB.
+The result confirms that the actual verifier can drive a real LoRA update under
+GRPO. Positive sampled rewards during five steps do not establish a learning
+trend or generalization gain.
+
+The completed matched validation comparison is:
+
+| Condition (1,024 tokens, v2 reward) | Correct answers | Sampled pass@1 | pass@4 |
+|---|---:|---:|---:|
+| Untouched base model | 2/32 | 6.25% | 25% |
+| After five GRPO updates | 2/32 | 6.25% | 25% |
+
+Configuration, reward protocol, and all puzzle/sample IDs match. Twenty-six
+completion texts changed, but aggregate accuracy did not improve. Eight development
+puzzles and one sampling seed are too small to establish a reliable training effect.
+The positive result at this stage is verified reward-driven parameter updates,
+not an accuracy gain or new reasoning ability.
+
+![Corrected GRPO rewards](results/long-v2-plots/reward.png)
+![Corrected GRPO completion lengths](results/long-v2-plots/completion-length.png)
+![Corrected validation endpoints](results/long-v2-plots/validation-accuracy.png)
+![Corrected before and after comparison](results/long-v2-plots/before-after.png)
+
+Training evidence is in `results/long-v2-training/`; the local saved adapter and
+restartable checkpoint are in `checkpoints/long-v2-smoke/final/` and
+`checkpoints/long-v2-smoke/checkpoint-5/`. Rollout log steps count completed updates
+before generation; training metric steps identify the update just completed.
+Thus rollout step 3 supplied the positive reward for optimizer update 4.
+The fixed-selection, readable generations are in
+[EXAMPLES.md](results/long-v2-training/EXAMPLES.md). Final validation outputs and
+the matched-comparison verification are in `results/long-v2-after/`.
+
+To extend this same run to 20 total steps, preserving its optimizer and RNG state:
+
+```powershell
+.venv\Scripts\python.exe -m tinyreasonrl.train --config configs/long-completion.json --max-steps 20 --output checkpoints/long-v2-smoke --results results/long-v2-training --resume checkpoints/long-v2-smoke/checkpoint-5
+```
+
+The additional 15 updates would take roughly 18 minutes at the measured speed,
+excluding evaluation. A fresh 200-step run would take about four hours; actual
+time depends on generated lengths and other GPU activity. Neither extension
+has been executed. Resuming across different reward protocols is rejected;
+historical strict-format checkpoints must not be silently continued with v2.
+
+## Historical pilot plots
 
 See [the pilot report](results/PILOT.md) for evidence paths and limitations.
 

@@ -1,0 +1,9 @@
+{
+  "same_config": true,
+  "same_reward_protocol": true,
+  "same_puzzles_and_samples": true,
+  "before_correct": 2.0,
+  "after_correct": 2.0,
+  "completion_count": 32,
+  "changed_completions": 26
+}

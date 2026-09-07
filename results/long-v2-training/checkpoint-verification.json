@@ -1,0 +1,8 @@
+{
+  "reward_protocol": "final-answer-v2",
+  "global_step": 5,
+  "lora_B_tensors": 186,
+  "nonzero_lora_B_tensors": 186,
+  "max_abs_lora_B": 1.3151641724107321e-05,
+  "all_finite": true
+}
