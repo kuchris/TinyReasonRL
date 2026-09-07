@@ -1,0 +1,65 @@
+{
+  "problems": 8,
+  "completions": 32,
+  "sampled_pass@1": 0.03125,
+  "pass@4": 0.125,
+  "average_reward": 0.03125,
+  "exact_target_success_rate": 0.03125,
+  "format_valid_rate": 0.75,
+  "valid_expression_rate": 0.0625,
+  "average_completion_tokens": 563.46875,
+  "truncation_rate": 0.5,
+  "mixed_reward_group_fraction": 0.125,
+  "failure_reasons": {
+    "correct": 1,
+    "illegal_syntax": 15,
+    "format": 8,
+    "numbers": 5,
+    "expression_size": 2,
+    "target": 1
+  },
+  "by_number_count": {
+    "3": {
+      "problems": 3,
+      "completions": 12,
+      "sampled_pass@1": 0.08333333333333333,
+      "pass@4": 0.3333333333333333,
+      "average_reward": 0.08333333333333333,
+      "exact_target_success_rate": 0.08333333333333333,
+      "format_valid_rate": 0.8333333333333334,
+      "valid_expression_rate": 0.16666666666666666,
+      "average_completion_tokens": 534.3333333333334,
+      "truncation_rate": 0.4166666666666667,
+      "mixed_reward_group_fraction": 0.3333333333333333,
+      "failure_reasons": {
+        "correct": 1,
+        "illegal_syntax": 6,
+        "numbers": 2,
+        "format": 2,
+        "target": 1
+      }
+    },
+    "4": {
+      "problems": 5,
+      "completions": 20,
+      "sampled_pass@1": 0.0,
+      "pass@4": 0.0,
+      "average_reward": 0.0,
+      "exact_target_success_rate": 0.0,
+      "format_valid_rate": 0.7,
+      "valid_expression_rate": 0.0,
+      "average_completion_tokens": 580.95,
+      "truncation_rate": 0.55,
+      "mixed_reward_group_fraction": 0.0,
+      "failure_reasons": {
+        "illegal_syntax": 9,
+        "format": 6,
+        "numbers": 3,
+        "expression_size": 2
+      }
+    }
+  },
+  "elapsed_seconds": 350.2623079000041,
+  "peak_allocated_gib": 1.7106285095214844,
+  "peak_reserved_gib": 2.46484375
+}

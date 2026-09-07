@@ -1,0 +1,27 @@
+{
+  "global_step": 20,
+  "source_checkpoint_unchanged": true,
+  "same_adapter_keys": true,
+  "all_adapter_tensors_finite": true,
+  "changed_adapter_tensors": 372,
+  "adapter_tensor_count": 372,
+  "max_abs_parameter_change_from_step5": 8.840142254484817e-05,
+  "training_updates": 20,
+  "training_rollouts": 160,
+  "correct_training_rollouts": 6.0,
+  "additional_rollouts": 120,
+  "additional_correct_rollouts": 4.0,
+  "positive_gradient_steps": [
+    4,
+    5,
+    6,
+    8,
+    14,
+    20
+  ],
+  "unique_training_puzzles": 40,
+  "all_rollouts_in_training_subset": true,
+  "no_validation_puzzle_overlap": true,
+  "saved_rewards_match_verifier": true,
+  "checkpoint_state_files_present": true
+}

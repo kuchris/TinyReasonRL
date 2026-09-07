@@ -1,0 +1,15 @@
+{
+  "same_config": true,
+  "same_reward_protocol": true,
+  "same_puzzles_prompts_and_samples": true,
+  "saved_rewards_match_verifier": true,
+  "metrics_match_raw_generations": true,
+  "correct_at_steps_0_5_20": [
+    2,
+    2,
+    1
+  ],
+  "completion_count": 32,
+  "changed_completions_from_base": 29,
+  "changed_completions_from_step5": 29
+}

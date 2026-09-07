@@ -8,7 +8,12 @@ verifiable arithmetic rewards. Increased reward is evidence of improved task
 performance; it does not establish that genuine reasoning emerged. Pretraining
 already supplies capabilities, and this experiment does not start from random weights.
 
-**Latest finding:** the initial 256-token pilot had no correctness signal. A
+**Latest finding:** the corrected run has reached 20 optimizer updates. Matched
+validation scored 1/32 correct, versus 2/32 for both the base and five-step adapter.
+Reward-driven parameter updates work, but this eight-puzzle pilot shows no accuracy
+gain. See the [20-step report](results/pilot20-training/README.md).
+
+The initial 256-token pilot had no correctness signal. A
 1,024-token probe exposed two correct final answers that the original tag-count
 rule rejected. The verifier now judges the last answer block (`final-answer-v2`),
 and the same saved long outputs score 2/32 correct (2/8 puzzles solved). These
@@ -239,17 +244,59 @@ The fixed-selection, readable generations are in
 [EXAMPLES.md](results/long-v2-training/EXAMPLES.md). Final validation outputs and
 the matched-comparison verification are in `results/long-v2-after/`.
 
-To extend this same run to 20 total steps, preserving its optimizer and RNG state:
+## Completed 20-step continuation
+
+The five-step checkpoint was resumed to 20 total updates, preserving optimizer
+and RNG state. Original five-step artifacts were retained; the combined trajectory
+and continuation provenance are in `results/pilot20-training/`.
+
+| Condition (same eight puzzles, four samples each) | Correct answers | Sampled pass@1 | pass@4 |
+|---|---:|---:|---:|
+| Base | 2/32 | 6.25% | 25% |
+| Five updates | 2/32 | 6.25% | 25% |
+| Twenty updates | 1/32 | 3.125% | 12.5% |
+
+The additional 15 updates took 906.8 seconds and produced four correct answers
+among 120 new training rollouts. Across all 20 updates, six of 160 answers earned
+reward, all on three-number puzzles. All 372 adapter tensors changed relative to
+step five and remained finite. Peak allocated memory was 5.37 GiB; peak reserved
+memory was 9.55 GiB. Training and validation puzzle keys were disjoint.
+
+Validation took 350.3 seconds. Twenty-nine of 32 completions changed relative to
+step five, but correctness decreased in this sample. Eight fixed development
+puzzles and one seed cannot establish a reliable performance trend. No final test
+evaluation or 200-step training run has been performed.
+
+![Twenty-step training reward](results/pilot20-plots/reward.png)
+![Twenty-step completion lengths](results/pilot20-plots/completion-length.png)
+![Measured validation at zero, five, and twenty updates](results/pilot20-plots/validation-accuracy.png)
+![Base and twenty-step validation](results/pilot20-plots/before-after.png)
+
+See the [report and verification evidence](results/pilot20-training/README.md)
+and [fixed-selection generations](results/pilot20-training/EXAMPLES.md).
+The local final adapter is in `checkpoints/pilot20/final/`; the restartable state
+is in `checkpoints/pilot20/checkpoint-20/`. These large local files are excluded
+from Git. The continuation used:
 
 ```powershell
-.venv\Scripts\python.exe -m tinyreasonrl.train --config configs/long-completion.json --max-steps 20 --output checkpoints/long-v2-smoke --results results/long-v2-training --resume checkpoints/long-v2-smoke/checkpoint-5
+.venv\Scripts\python.exe -m tinyreasonrl.train --config configs/long-completion.json --max-steps 20 --output checkpoints/pilot20 --results results/pilot20-training --resume checkpoints/long-v2-smoke/checkpoint-5
 ```
 
-The additional 15 updates would take roughly 18 minutes at the measured speed,
-excluding evaluation. A fresh 200-step run would take about four hours; actual
-time depends on generated lengths and other GPU activity. Neither extension
-has been executed. Resuming across different reward protocols is rejected;
-historical strict-format checkpoints must not be silently continued with v2.
+The first five updates' JSON logs and metadata were copied into the new results
+directory before resuming. `continuation.json` records this provenance.
+Resuming across different reward protocols is rejected; historical strict-format
+checkpoints must not be silently continued with v2.
+
+To reproduce plots with measured intermediate checkpoints and view TensorBoard:
+
+```powershell
+.venv\Scripts\python.exe -m tinyreasonrl.plot --training results/pilot20-training/training.jsonl --before results/long-completion-v2 --after results/pilot20-after --intermediate 5 results/long-v2-after --output results/pilot20-plots --tensorboard-logdir results/pilot20-training/tensorboard
+.venv\Scripts\tensorboard.exe --logdir results/pilot20-training/tensorboard --host 127.0.0.1 --port 6006
+```
+
+TensorBoard contains resumed training metrics at steps 6–20, exported peak memory
+at steps 1–20, and measured validation at steps 0, 5, and 20. JSON logs and PNG
+plots preserve the full trajectory in Git; TensorBoard event files remain local.
 
 ## Historical pilot plots
 

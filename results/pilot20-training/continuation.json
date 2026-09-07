@@ -1,0 +1,22 @@
+{
+  "source_results": "results\\long-v2-training",
+  "source_checkpoint": "checkpoints\\long-v2-smoke\\checkpoint-5",
+  "source_global_step": 5,
+  "target_global_step": 20,
+  "source_adapter_sha256": "3ac8834ff75b9a9685cfe1a8636e1b8355f703b7f5165740b62bb26c6257de6c",
+  "same_experiment": true,
+  "same_reward_protocol": true,
+  "training_config_changes": {
+    "max_steps": [
+      5,
+      20
+    ],
+    "save_steps": [
+      5,
+      20
+    ]
+  },
+  "inherited_training_updates": 5,
+  "inherited_rollouts": 40,
+  "note": "Initial metadata and steps 1-5 logs are copied for a continuous trajectory; originals and the step-5 adapter remain untouched. The resumed TrainerState retains checkpoint cadence 5."
+}
